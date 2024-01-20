@@ -194,10 +194,11 @@ class Flower(models.Model):
 
 class Goods(models.Model):
     goods_id = models.AutoField(primary_key=True, db_comment='商品编号')
+    good_sort = models.CharField(max_length=50, blank=True, null=True, db_comment='商品种类')
     gname = models.CharField(max_length=50, blank=True, null=True, db_comment='商品名称')
     flower_id = models.CharField(max_length=50, blank=True, null=True, db_comment='花编号')
     image = models.CharField(max_length=255, blank=True, null=True, db_comment='商品图片')
-    intor = models.CharField(max_length=255, blank=True, null=True, db_comment='简介')
+    ename = models.CharField(max_length=255, blank=True, null=True, db_comment='英文名')
     size = models.CharField(max_length=50, blank=True, null=True, db_comment='尺寸')
     charge = models.CharField(max_length=50, blank=True, null=True, db_comment='价格')
     total_num = models.CharField(max_length=50, blank=True, null=True, db_comment='总数')
@@ -325,7 +326,8 @@ class User(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True, db_comment='现居地')
     time = models.DateField(blank=True, null=True, db_comment='注册日期')
     postnum = models.CharField(max_length=10, blank=True, null=True, db_comment='邮政编码')
-    e_mail = models.CharField(db_column='e-mail', max_length=50, blank=True, null=True, db_comment='邮箱')  # Field renamed to remove unsuitable characters.
+    e_mail = models.CharField(db_column='e-mail', max_length=50, blank=True, null=True,
+                              db_comment='邮箱')  # Field renamed to remove unsuitable characters.
     intor = models.CharField(max_length=255, blank=True, null=True, db_comment='个签')
     stage = models.CharField(max_length=50, blank=True, null=True, db_comment='用户等级')
 
