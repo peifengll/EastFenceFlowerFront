@@ -26,6 +26,7 @@ class FlowerGoodsSerializer(serializers.Serializer):
     use = serializers.CharField()
     ldname = serializers.CharField()
 
+
 class FlowerGoodsDetailSerializer(serializers.Serializer):
     flower_id = serializers.IntegerField()
     charge = serializers.FloatField()
@@ -40,3 +41,5 @@ class FlowerGoodsDetailSerializer(serializers.Serializer):
     image3 = serializers.CharField()
     use = serializers.CharField()
     ldname = serializers.CharField()
+    size=serializers.CharField()
+    intor=serializers.CharField()

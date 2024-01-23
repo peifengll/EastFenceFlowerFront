@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'models',
     'flowerInfo',
     'goods',
+    'cart',
+    'user',
 ]
 
 MIDDLEWARE = [

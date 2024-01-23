@@ -28,7 +28,9 @@ class FlowerAsGoods(APIView):
     def get(self, request):
         id = request.GET.get("id")
         infos = custom_query2(flower_id=id)
+        # print(infos[0])
         ser = FlowerGoodsDetailSerializer(infos, many=True)
+
         return BaseResponse(data=ser.data, status=200)
 
 
@@ -54,7 +56,7 @@ def custom_query2(flower_id=None):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT
-                flower.flower_id, charge, total_num, salenum,nickname,
+                flower.flower_id, charge, total_num, salenum,nickname,`size`,intor,
                 fname, enname, brithplace, enplace, flower.image, image2, image3, `use`, ldname
             FROM flower, goods
             WHERE
