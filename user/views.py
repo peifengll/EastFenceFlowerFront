@@ -16,8 +16,8 @@ from user.serializers import UserInfoSerializer
 class LoginView(APIView):
 
     def post(self, request):
-        user = request.POST.get('user')
-        pwd = request.POST.get('pwd')
+        user = request.POST.get('username')
+        pwd = request.POST.get('password')
         print(user, pwd)
         try:
             user = models.models.User.objects.get(phone=user, keyword=pwd)
@@ -25,16 +25,16 @@ class LoginView(APIView):
             raise serializers.ValidationError("No user found with this username and password.")
         if user == None:
             return BaseResponse(data={'msg': '用户名或密码错误'}, status=203)
-        u=UserInfoSerializer(user)
+        u = UserInfoSerializer(user)
         print(user)
-        return BaseResponse(data={'msg': '登录成功','user':u.data}, status=200)
+        return BaseResponse(data={'msg': '登录成功', 'user': u.data}, status=200)
 
 
 class RegisterView(APIView):
     def post(self, request):
         user = request.POST.get('username')
         pwd = request.POST.get('password')
-        if user == "" or user==None or pwd==None or pwd == "":
+        if user == "" or user == None or pwd == None or pwd == "":
             return BaseResponse(data={'msg': '手机号或者密码缺失'}, status=202)
 
         t = None
