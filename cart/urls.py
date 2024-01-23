@@ -9,3 +9,4 @@ urlpatterns = [
     path('add', CartAddView.as_view()),
     path('show', CartShow.as_view()),
 ]
+

@@ -99,6 +99,7 @@ class Cart(models.Model):
     gname = models.CharField(max_length=50, blank=True, null=True, db_comment='商品名')
     goods_id = models.CharField(max_length=50, blank=True, null=True, db_comment='商品编号')
     num = models.CharField(max_length=50, blank=True, null=True, db_comment='数量')
+    price = models.CharField(max_length=50, blank=True, null=True, db_comment='价格')
 
     class Meta:
         managed = False

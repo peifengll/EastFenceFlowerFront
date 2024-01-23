@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from rest_framework.views import APIView
 
@@ -17,6 +19,17 @@ class CartAddView(APIView):
         uname = request.POST.get('uname')
         gname = request.POST.get('gname')
         goodsid = request.POST.get('goods_id')
+        try:
+            goodsid = json.loads(goodsid)
+        except Exception as e:
+            return BaseResponse(msg="数据解析错误", status=500)
+
+        price = request.POST.get('price')
+        try:
+            price = json.loads(price)
+        except Exception as e:
+            return BaseResponse(msg="数据解析错误", status=500)
+
         num = request.POST.get('num')
         if goodsid == "" or goodsid is None:
             return BaseResponse(data={}, status=301, msg="商品消息丢失")
@@ -24,13 +37,33 @@ class CartAddView(APIView):
             k = Cart.objects.create(user_id=userid,
                                     uname=uname,
                                     gname=gname,
-                                    goods_id=goodsid,
+                                    goods_id=goodsid[0],
                                     num=num,
+                                    price=price[goodsid[0]]
                                     )
+
+            print(k)
+            k = Cart.objects.create(user_id=userid,
+                                    uname=uname,
+                                    gname=gname,
+                                    goods_id=goodsid[1],
+                                    num=num,
+                                    price=price[goodsid[1]]
+                                    )
+
+            print(k)
+            k = Cart.objects.create(user_id=userid,
+                                    uname=uname,
+                                    gname=gname,
+                                    goods_id=goodsid[2],
+                                    num=num,
+                                    price=price[goodsid[2]]
+                                    )
+
             print(k)
         except Exception as e:
             print(e)
-            return BaseResponse(data={'error': e.__str__()}, status=401, msg="添加失败")
+            return BaseResponse(data={'error': e.__str__()}, status=500, msg="添加失败")
         return BaseResponse(data={}, status=200, msg="添加成功")
 
 
