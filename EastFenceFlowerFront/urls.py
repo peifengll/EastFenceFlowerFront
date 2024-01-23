@@ -17,7 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from EastFenceFlowerFront.views import HomeView
+
 urlpatterns = [
+    path('', HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
     path('flower/', include('flowerInfo.urls'), name='flower info'),
     path('goods/', include('goods.urls'), name='goods info'),

@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 import models.models
 from libs.utils.base_response import BaseResponse
+from user.serializers import UserInfoSerializer
 
 
 # Create your views here.
@@ -24,9 +25,9 @@ class LoginView(APIView):
             raise serializers.ValidationError("No user found with this username and password.")
         if user == None:
             return BaseResponse(data={'msg': '用户名或密码错误'}, status=203)
-
+        u=UserInfoSerializer(user)
         print(user)
-        return BaseResponse(data={'msg': '登录成功'}, status=200)
+        return BaseResponse(data={'msg': '登录成功','user':u.data}, status=200)
 
 
 class RegisterView(APIView):
