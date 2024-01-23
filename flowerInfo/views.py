@@ -56,7 +56,7 @@ def custom_query2(flower_id=None):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT
-                flower.flower_id, charge, total_num, salenum,nickname,`size`,intor,
+                flower.flower_id, charge, total_num, salenum,nickname,`size`,intor,goods_id,
                 fname, enname, brithplace, enplace, flower.image, image2, image3, `use`, ldname
             FROM flower, goods
             WHERE

@@ -43,3 +43,4 @@ class FlowerGoodsDetailSerializer(serializers.Serializer):
     ldname = serializers.CharField()
     size=serializers.CharField()
     intor=serializers.CharField()
+    goods_id=serializers.CharField()
