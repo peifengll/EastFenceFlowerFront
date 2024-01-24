@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.views import APIView
 
 import models.models
+from address.serializers import AddressInfoSerializer
 from libs.utils.base_response import BaseResponse
 from user.serializers import UserInfoSerializer
 
@@ -23,11 +24,13 @@ class LoginView(APIView):
             user = models.models.User.objects.get(phone=user, keyword=pwd)
         except:
             raise serializers.ValidationError("No user found with this username and password.")
-        if user == None:
+        if user is None:
             return BaseResponse(data={'msg': '用户名或密码错误'}, status=203)
         u = UserInfoSerializer(user)
         print(user)
-        return BaseResponse(data={'msg': '登录成功', 'user': u.data}, status=200)
+        adds = models.models.Address.objects.filter(u_id=user.user_id)
+        ser = AddressInfoSerializer(adds, many=True)
+        return BaseResponse(msg='登录成功', data={'address': ser.data, 'user': u.data}, status=200)
 
 
 class RegisterView(APIView):

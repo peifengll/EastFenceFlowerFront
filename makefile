@@ -2,7 +2,7 @@
 run:
 	python manage.py runserver 0.0.0.0:8000
 newapp:
-	python manage.py startapp  <app_name>
+	python manage.py startapp  $(name)
 
 inreq:
 	pip install -r requirements.txt  -i https://mirrors.aliyun.com/pypi/simple
