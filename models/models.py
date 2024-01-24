@@ -335,3 +335,15 @@ class User(models.Model):
     class Meta:
         managed = False
         db_table = 'user'
+
+
+class Likes(models.Model):
+    like_id = models.AutoField(primary_key=True, db_comment='主键，唯一id')
+    user_id = models.IntegerField(db_comment='用户')
+    flower_id = models.IntegerField(db_comment='用户喜欢的一朵花的id')
+    image = models.CharField(max_length=255, blank=True, null=True, db_comment='花的图片')
+    price = models.IntegerField(blank=True, null=True, db_comment='该花最小号的价格')
+
+    class Meta:
+        managed = False
+        db_table = 'likes'
