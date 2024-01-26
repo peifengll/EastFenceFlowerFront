@@ -17,6 +17,10 @@ class LikesAddView(APIView):
         if userid is None or flowerid is None or userid == "" or flowerid == "":
             return BaseResponse(msg='flowerid 和 userid 不能为空', status=306)
         try:
+            c = Likes.objects.filter(user_id=userid, flower_id=flowerid)
+            if (c is not None) and len(c) > 0:
+                print("flowerid and userod is exist", c)
+                return BaseResponse(msg="已经添加过喜欢了", status=309)
             Likes.objects.create(
                 user_id=userid,
                 flower_id=flowerid,
@@ -24,7 +28,7 @@ class LikesAddView(APIView):
                 image=image,
             )
         except Exception as e:
-            return BaseResponse(msg='数据未插入', status=500)
+            return BaseResponse(msg='服务器内部错误', status=500)
         return BaseResponse(msg='添加喜欢成功', status=200)
 
 
@@ -48,7 +52,7 @@ class LikesDelView(APIView):
     def delete(self, request):
         likes_id = request.data.get("id")
         if likes_id is None or likes_id == "":
-            return BaseResponse(msg='未获取到likes_id', status=401)
+            return BaseResponse(msg='未获取到对应id', status=307)
         try:
             Likes.objects.filter(
                 like_id=likes_id,
