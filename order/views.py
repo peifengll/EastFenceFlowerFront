@@ -18,7 +18,10 @@ class OrderAddView(APIView):
             return BaseResponse(msg="用户凭证缺失", status=401)
         money = request.data.get("money")
         cart_ids = request.data.get("cart_id")
-        cart_ids = json.loads(cart_ids)
+        # print(cart_ids)
+        # print(cart_ids[0])
+        if type(cart_ids) == str:
+            cart_ids = json.loads(cart_ids)
         address_id = request.data.get("address_id")
 
         try:
