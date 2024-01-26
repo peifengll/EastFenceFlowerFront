@@ -45,6 +45,7 @@ class CartAddView(APIView):
 
         if goods_ids == "" or goods_ids is None:
             return BaseResponse(data={}, status=301, msg="商品消息丢失")
+        id_list = []
         for i in goods_ids:
             # 如果是同样的数据，
             c = None
@@ -55,6 +56,7 @@ class CartAddView(APIView):
             try:
                 if c is not None:
                     Cart.objects.filter(user_id=userid, goods_id=i).update(num=int(c.num) + int(num))
+                    id_list.append(c.cart_id)
                 else:
                     k = Cart.objects.create(user_id=userid,
                                             uname=uname,
@@ -63,11 +65,10 @@ class CartAddView(APIView):
                                             num=num,
                                             price=price[i]
                                             )
-
-                    print(k)
+                    id_list.append(k.cart_id)
             except Exception as e:
                 return BaseResponse(data={'error': e.__str__()}, status=500, msg="添加失败")
-        return BaseResponse(data={}, status=200, msg="添加成功")
+        return BaseResponse(data={"ids":id_list}, status=200, msg="添加成功")
 
 
 class CartShow(APIView):
