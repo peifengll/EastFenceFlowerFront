@@ -1,11 +1,15 @@
+import time as time_
 from datetime import time
 
+import numpy as np
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.views import APIView
 
 import models.models
+from EastFenceFlowerFront import settings
 from address.serializers import AddressInfoSerializer
 from libs.utils.base_response import BaseResponse
 from user.serializers import UserInfoSerializer
@@ -55,3 +59,92 @@ class RegisterView(APIView):
         print(a)
 
         return BaseResponse(data={'msg': '注册成功'}, status=200)
+
+
+class UploadView(APIView):
+    def post(self, request):
+        print("403????")
+        # 获取一个文件管理器对象
+        userid = request.data.get('user_id')
+        if userid is None or userid == "":
+            return BaseResponse(msg="用户凭证未获取到", status=401)
+
+        file = request.FILES['pic']
+        # if file is None:
+        #     return BaseResponse(msg="图片未获取到", status=308)
+        phone = request.data.get('phone')
+        nickname = request.data.get('nickname')
+        age = request.data.get('age')
+        location = request.data.get('location')
+        email = request.data.get('email')
+        gender = request.data.get('gender')
+        bio = request.data.get('bio')
+        print(phone, nickname, age, location, email, gender, bio)
+        try:
+            obj = models.models.User.objects.filter(user_id=1)
+            if phone:
+                obj.update(phone=phone)
+            if nickname:
+                obj.update(uname=nickname)
+            if age:
+                obj.update(age=age)
+            if location:
+                obj.update(address=location)
+            if email:
+                obj.update(e_mail=email)
+            if gender:
+                obj.update(sex=gender)
+            if bio:
+                obj.update(intor=bio)
+            # 保存文件
+            if file is not None:
+                new_name = getNewName('avatar')  # 具体实现在自己写的uploads.py下
+                # 将要保存的地址和文件名称
+                where = '%s/users/%s' % (settings.MEDIA_ROOT, new_name)
+                # 分块保存image
+                content = file.chunks()
+                with open(where, 'wb') as f:
+                    for i in content:
+                        f.write(i)
+
+                # 上传文件名称到数据库
+                obj.filter(user_id=1).update(photo=new_name)
+            # 返回的httpresponse
+        except Exception as e:
+            return BaseResponse(msg="服务器内部错误", status=500)
+        return BaseResponse(msg="返回成功", status=200, data={})
+
+
+# def upload_handle(request):
+#     print("403????")
+#     # 获取一个文件管理器对象
+#     file = request.FILES['pic']
+#
+#     # 保存文件
+#     new_name = getNewName('avatar')  # 具体实现在自己写的uploads.py下
+#     # 将要保存的地址和文件名称
+#     where = '%s/users/%s' % (settings.MEDIA_ROOT, new_name)
+#     # 分块保存image
+#     content = file.chunks()
+#     with open(where, 'wb') as f:
+#         for i in content:
+#             f.write(i)
+#
+#     # 上传文件名称到数据库
+#     models.models.User.objects.filter(user_id=1).update(photo=new_name)
+#     # 返回的httpresponse
+#     return HttpResponse('ok')
+
+
+def getNewName(file_type):
+    # 前面是file_type+年月日时分秒
+    new_name = time_.strftime(file_type + '-%Y%m%d%H%M%S', time_.localtime())
+    # 最后是5个随机数字
+    # Python中的numpy库中的random.randint(a, b, n)表示随机生成n个大于等于a，小于b的整数
+    ranlist = np.random.randint(0, 10, 5)
+    for i in ranlist:
+        new_name += str(i)
+    # 加后缀名
+    new_name += '.jpg'
+    # 返回字符串
+    return new_name

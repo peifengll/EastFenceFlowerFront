@@ -16,17 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from django.conf.urls.static import static
+from django.conf import settings
 from EastFenceFlowerFront.views import HomeView
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
-    path('admin/', admin.site.urls),
-    path('flower/', include('flowerInfo.urls'), name='flower info'),
-    path('goods/', include('goods.urls'), name='goods info'),
-    path('user/', include('user.urls'), name='user info'),
-    path('cart/', include('cart.urls'), name='cart info'),
-    path('address/', include('address.urls'), name='address info'),
-    path('likes/', include('likes.urls'), name='likes info'),
-    path('order/', include('order.urls'), name='order info'),
-]
+                  path('', HomeView.as_view(), name='home'),
+                  path('admin/', admin.site.urls),
+                  path('flower/', include('flowerInfo.urls'), name='flower info'),
+                  path('goods/', include('goods.urls'), name='goods info'),
+                  path('user/', include('user.urls'), name='user info'),
+                  path('cart/', include('cart.urls'), name='cart info'),
+                  path('address/', include('address.urls'), name='address info'),
+                  path('likes/', include('likes.urls'), name='likes info'),
+                  path('order/', include('order.urls'), name='order info'),
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
