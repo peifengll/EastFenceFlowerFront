@@ -100,6 +100,7 @@ class Cart(models.Model):
     goods_id = models.CharField(max_length=50, blank=True, null=True, db_comment='商品编号')
     num = models.CharField(max_length=50, blank=True, null=True, db_comment='数量')
     price = models.CharField(max_length=50, blank=True, null=True, db_comment='价格')
+    size = models.CharField(max_length=50, blank=True, null=True, db_comment='大中小')
 
     class Meta:
         managed = False
@@ -260,6 +261,9 @@ class Order(models.Model):
     peisong_id = models.CharField(max_length=10, blank=True, null=True, db_comment='配送人员编号')
     remark = models.CharField(max_length=255, blank=True, null=True, db_comment='评价')
     cart_id = models.CharField(max_length=50, blank=True, null=False, db_comment='cart id')
+    aname = models.CharField(max_length=50, blank=True, null=False, db_comment='收货人名字')
+    address = models.CharField(max_length=50, blank=True, null=False, db_comment='收货人地址')
+    phone = models.CharField(max_length=50, blank=True, null=False, db_comment='收货人手机号')
 
     class Meta:
         managed = False

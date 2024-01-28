@@ -1,3 +1,4 @@
+from django.db import connection
 from django.shortcuts import render
 from rest_framework.views import APIView
 
@@ -39,18 +40,22 @@ class LikesShowView(APIView):
             return BaseResponse(msg='未获取到用户凭证', status=401)
         infos = []
         try:
-            infos = Likes.objects.filter(
-                user_id=userid,
-            )
-            info = LikesInfoSerializer(infos, many=True)
+            infos=custom_query(userid=userid)
         except Exception as e:
             return BaseResponse(msg='内部错误' + e.__str__(), status=500)
-        return BaseResponse(msg='添加喜欢成功', data=info.data, status=200)
+        return BaseResponse(msg='添加喜欢成功', data=infos, status=200)
 
 
 class LikesDelView(APIView):
     def delete(self, request):
+        print("**************")
+        print("执行否")
+        print("**************")
+        print(request.data)
         likes_id = request.data.get("id")
+        print("**************")
+        print(likes_id)
+        print("**************")
         if likes_id is None or likes_id == "":
             return BaseResponse(msg='未获取到对应id', status=307)
         try:
@@ -60,3 +65,24 @@ class LikesDelView(APIView):
         except Exception as e:
             return BaseResponse(msg='删除失败' + e.__str__(), status=500)
         return BaseResponse(msg='删除成功', status=200)
+
+
+
+def custom_query(userid=None):
+    with connection.cursor() as cursor:
+        cursor.execute("""   
+            SELECT
+               l.flower_id,
+               l.image,
+               l.price,
+               f.enname,
+               f.fname
+            FROM
+                `likes` l
+            INNER JOIN flower f ON l.flower_id = f.flower_id
+            WHERE
+                l.user_id = %s;
+        """, [userid])
+        columns = [col[0] for col in cursor.description]
+        result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return result

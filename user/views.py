@@ -68,8 +68,9 @@ class UploadView(APIView):
         userid = request.data.get('user_id')
         if userid is None or userid == "":
             return BaseResponse(msg="用户凭证未获取到", status=401)
-
-        file = request.FILES['pic']
+        file = None
+        if 'pic' in request.FILES:
+            file = request.FILES['pic']
         # if file is None:
         #     return BaseResponse(msg="图片未获取到", status=308)
         phone = request.data.get('phone')
@@ -81,7 +82,7 @@ class UploadView(APIView):
         bio = request.data.get('bio')
         print(phone, nickname, age, location, email, gender, bio)
         try:
-            obj = models.models.User.objects.filter(user_id=1)
+            obj = models.models.User.objects.filter(user_id=userid)
             if phone:
                 obj.update(phone=phone)
             if nickname:

@@ -63,12 +63,13 @@ class CartAddView(APIView):
                                             gname=gname,
                                             goods_id=i,
                                             num=num,
-                                            price=price[i]
+                                            price=price[i][1],
+                                            size=price[i][0]
                                             )
                     id_list.append(k.cart_id)
             except Exception as e:
                 return BaseResponse(data={'error': e.__str__()}, status=500, msg="添加失败")
-        return BaseResponse(data={"ids":id_list}, status=200, msg="添加成功")
+        return BaseResponse(data={"ids": id_list}, status=200, msg="添加成功")
 
 
 class CartShow(APIView):
