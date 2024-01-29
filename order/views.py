@@ -104,6 +104,13 @@ def custom_query2(userid=None):
             for j in cart_ids:
                 cart_infos.append(queryCart(j))
             i['cart_infos'] = cart_infos
+            print(cart_infos[0][0]['goods_id'])
+            print("*"*5)
+            names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
+            print(names)
+            i['ename'] = names[0]['ename']
+            i['gname'] = names[0]['gname']
+
     return result
 
 
@@ -112,7 +119,6 @@ def queryCart(cart_id=None):
         cursor.execute("""   
             SELECT
                 c.uname,
-                c.gname,
                 c.num,
                 c.size,
                 c.price,
@@ -126,3 +132,17 @@ def queryCart(cart_id=None):
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     return result
+
+
+def queryNames(goods_id=None):
+    print(goods_id,"sasas")
+    with connection.cursor() as cursor:
+        cursor.execute("""   
+            select goods.ename, goods.gname
+            from goods
+            where goods_id = %s               
+           """, [goods_id])
+        columns = [col[0] for col in cursor.description]
+        result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return result
+
