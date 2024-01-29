@@ -60,7 +60,7 @@ class LikesDelView(APIView):
             return BaseResponse(msg='未获取到对应id', status=307)
         try:
             Likes.objects.filter(
-                like_id=likes_id,
+                flower_id=likes_id,
             ).delete()
         except Exception as e:
             return BaseResponse(msg='删除失败' + e.__str__(), status=500)
