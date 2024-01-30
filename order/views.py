@@ -146,7 +146,7 @@ def custom_query2(userid=None):
             print(names)
             i['ename'] = names[0]['ename']
             i['gname'] = names[0]['gname']
-            i['flower_id'] = names[0]['flower_id']
+            i['flower_id'] = int(names[0]['flower_id'])
     return result
 
 
