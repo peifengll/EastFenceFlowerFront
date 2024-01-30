@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 from django.urls import path
 
-from order.views import OrderAddView, OrderListView
+from order.views import OrderAddView, OrderListView, OrderUpdateView
 
 urlpatterns = [
     path('add', OrderAddView.as_view()),
     path('allinfo', OrderListView.as_view()),
+    path('update', OrderUpdateView.as_view()),
 ]
 

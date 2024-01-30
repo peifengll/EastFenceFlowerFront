@@ -50,6 +50,35 @@ class OrderListView(APIView):
         return BaseResponse(data=res, msg="没啥问题", status=200)
 
 
+class OrderUpdateView(APIView):
+    def put(self, request):
+        # 知道这是属于什么类型,取消订单？申请退款？确认收获等
+        orderid = request.data.get("order_id")
+        if orderid is None or orderid == "":
+            return BaseResponse(msg="订单信息缺失", status=311)
+        typeis = request.data.get("type")
+        try:
+            obj = Order.objects.filter(order_id=orderid)
+            if typeis == "cancer":
+                obj.update(stage="0026")
+            elif typeis == "pay":
+                obj.update(stage="0022")
+            elif typeis == "apply":
+                obj.update(stage="0025")
+            elif typeis == "sure":
+                obj.update(stage="0024")
+            elif typeis == "feedback":
+                content = request.data.get("feedback")
+                if content is None or content == "":
+                    return BaseResponse(msg="评论怎么为空？", status=313)
+                obj.update(remark=content)
+            else:
+                return BaseResponse(msg="type不符合约束", status=312)
+        except Exception as e:
+            return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
+        return BaseResponse(msg="操作成功", status=200)
+
+
 def custom_query(userid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
@@ -88,11 +117,18 @@ def custom_query2(userid=None):
                 o.aname,
                 o.phone,
                 o.address,
-                o.cart_id as cart_infos
+                o.remark,
+                o.beihuo_id,
+                o.beihuo,
+                o.peisong_id,
+                o.peisong,
+                o.cart_id AS cart_infos 
             FROM
-                `order` o
+                `order` o 
             WHERE
-                o.user_id = %s;
+                o.user_id = %s 
+            ORDER BY
+                o.order_id DESC
         """, [userid])
 
         columns = [col[0] for col in cursor.description]
@@ -105,12 +141,12 @@ def custom_query2(userid=None):
                 cart_infos.append(queryCart(j))
             i['cart_infos'] = cart_infos
             print(cart_infos[0][0]['goods_id'])
-            print("*"*5)
+            print("*" * 5)
             names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
             print(names)
             i['ename'] = names[0]['ename']
             i['gname'] = names[0]['gname']
-
+            i['flower_id'] = names[0]['flower_id']
     return result
 
 
@@ -135,14 +171,13 @@ def queryCart(cart_id=None):
 
 
 def queryNames(goods_id=None):
-    print(goods_id,"sasas")
+    print(goods_id, "sasas")
     with connection.cursor() as cursor:
         cursor.execute("""   
-            select goods.ename, goods.gname
+            select goods.ename, goods.gname,goods.flower_id
             from goods
             where goods_id = %s               
            """, [goods_id])
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return result
-
