@@ -79,6 +79,25 @@ class OrderUpdateView(APIView):
         return BaseResponse(msg="操作成功", status=200)
 
 
+# 按照id查
+class OrderShowView(APIView):
+    def get(self, request):
+        # 知道这是属于什么类型,取消订单？申请退款？确认收获等
+        orderid = request.GET.get("order_id")
+        if orderid is None or orderid == "":
+            return BaseResponse(msg="缺失订单信息", status=313)
+        res = None
+        try:
+            res = queryOneOrder(orderid=orderid)
+            if res is None or res == []:
+                print("该订单不存在")
+                return BaseResponse(msg="没得这个数据哦！",  status=200)
+        except Exception as e:
+            return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
+
+        return BaseResponse(msg="操作成功", data=res[0], status=200)
+
+
 def custom_query(userid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
@@ -103,6 +122,51 @@ def custom_query(userid=None):
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
+    return result
+
+
+def queryOneOrder(orderid=None):
+    with connection.cursor() as cursor:
+        cursor.execute("""   
+            SELECT
+                o.order_id,
+                o.stage,
+                o.time,
+                o.money,
+                o.aname,
+                o.phone,
+                o.address,
+                o.remark,
+                o.beihuo_id,
+                o.beihuo,
+                o.peisong_id,
+                o.peisong,
+                o.cart_id AS cart_infos 
+            FROM
+                `order` o 
+            WHERE
+                o.order_id = %s 
+        """, [orderid])
+        columns = [col[0] for col in cursor.description]
+        if len(columns) == 0:
+            return None
+        result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        if len(result) == 0 or result is None:
+            return None
+        for i in result:
+            cart_ids = eval(i['cart_infos'])
+            # 拿到cart_ids
+            cart_infos = []
+            for j in cart_ids:
+                cart_infos.append(queryCart(j))
+            i['cart_infos'] = cart_infos
+            print(cart_infos[0][0]['goods_id'])
+            print("*" * 5)
+            names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
+            print(names)
+            i['ename'] = names[0]['ename']
+            i['gname'] = names[0]['gname']
+            i['flower_id'] = int(names[0]['flower_id'])
     return result
 
 
