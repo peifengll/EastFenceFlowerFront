@@ -326,3 +326,28 @@ class Likes(models.Model):
     class Meta:
         managed = False
         db_table = 'likes'
+
+
+class Msg(models.Model):
+    msgid = models.AutoField(db_column='msgId', primary_key=True, db_comment='消息id')  # Field name made lowercase.
+    chatid = models.IntegerField(db_column='chatId', blank=True, null=True, db_comment='会话id')  # Field name made lowercase.
+    userid = models.CharField(db_column='userId', max_length=20, blank=True, null=True, db_comment='用户id')  # Field name made lowercase.
+    userpro = models.CharField(db_column='userPro', max_length=10, blank=True, null=True, db_comment='用户属性')  # Field name made lowercase.
+    creattime = models.TimeField(db_column='creatTime', blank=True, null=True, db_comment='创建时间')  # Field name made lowercase.
+    chatmsg = models.CharField(db_column='chatMsg', max_length=255, blank=True, null=True, db_comment='消息内容')  # Field name made lowercase.
+    readstate = models.CharField(db_column='readState', max_length=10, blank=True, null=True, db_comment='查看状态，0未读，1已读')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'msg'
+
+
+class Chat(models.Model):
+    chatid = models.AutoField(db_column='chatId', primary_key=True, db_comment='会话id')  # Field name made lowercase.
+    userid = models.IntegerField(db_column='userId', blank=True, null=True, db_comment='用户id')  # Field name made lowercase.
+    chattime = models.DateField(db_column='chatTime', blank=True, null=True, db_comment='会话创建时间')  # Field name made lowercase.
+    chatstate = models.CharField(db_column='chatState', max_length=10, blank=True, null=True, db_comment='会话状态，0正在进行，1已结束')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'chat'

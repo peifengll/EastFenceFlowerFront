@@ -30,4 +30,5 @@ urlpatterns = [
                   path('address/', include('address.urls'), name='address info'),
                   path('likes/', include('likes.urls'), name='likes info'),
                   path('order/', include('order.urls'), name='order info'),
+                  path('chat/', include('chat.urls'), name='chat record'),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
