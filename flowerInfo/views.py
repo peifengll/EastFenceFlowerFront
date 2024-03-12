@@ -37,15 +37,26 @@ class FlowerAsGoods(APIView):
 # 连表查询
 def custom_query1(sort_id=None):
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT
-                flower.flower_id, charge, total_num, salenum,
-                fname, enname, brithplace, enplace, flower.image, image2, image3, `use`, ldname
-            FROM flower, goods
-            WHERE
-                flower.flower_id = goods.flower_id
-            and flower.sort= %s and goods.size="0091"
-        """, [sort_id])
+        if sort_id != "0040":
+            cursor.execute("""
+                SELECT
+                    flower.flower_id, charge, total_num, salenum,
+                    fname, enname, brithplace, enplace, flower.image, image2, image3, `use`, ldname
+                FROM flower, goods
+                WHERE
+                    flower.flower_id = goods.flower_id
+                and flower.sort= %s and goods.size="0091"
+            """, [sort_id])
+        else:
+            cursor.execute("""
+                            SELECT
+                                flower.flower_id, charge, total_num, salenum,
+                                fname, enname, brithplace, enplace, flower.image, image2, image3, `use`, ldname
+                            FROM flower, goods
+                            WHERE
+                                flower.flower_id = goods.flower_id
+                            and  goods.size="0091"
+                        """)
 
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
