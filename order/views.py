@@ -193,18 +193,7 @@ def custom_query2(userid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
             SELECT
-                o.order_id,
-                o.stage,
-                o.time,
-                o.money,
-                o.aname,
-                o.phone,
-                o.address,
-                o.remark,
-                o.beihuo_id,
-                o.beihuo,
-                o.peisong_id,
-                o.peisong,
+                o.*,
                 o.cart_id AS cart_infos 
             FROM
                 `order` o 
