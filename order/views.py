@@ -1,12 +1,12 @@
 import json
 
-from django.db import connection
+from django.db import connection, transaction
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework.views import APIView
 
 from libs.utils.base_response import BaseResponse
-from models.models import Order, Address
+from models.models import Order, Address, Flower, Cart, Goods
 from order.serializers import OrderInfoSerializer
 
 
@@ -24,12 +24,31 @@ class OrderAddView(APIView):
         if type(cart_ids) == str:
             cart_ids = json.loads(cart_ids)
         address_id = request.data.get("address_id")
-
+        infos = Cart.objects.filter(cart_id__in=cart_ids)
+        #  total flower num,就是花要减去的, 然后 单独的只需要看每个满不满足即可，
+        noway = True
+        msg = ""
+        for i in infos:
+            good = Goods.objects.get(goods_id=i.goods_id)
+            if int(good.total_num) < int(i.num):
+                msg += " 你购买的 %s数量超过库存,该产品库存只有%s \n" % (good.gname, good.total_num)
+                noway = False
+        if not noway:
+            return BaseResponse(msg=msg, status=317)
         try:
             obj = Address.objects.get(add_id=address_id)
             today = timezone.now()
-            Order.objects.create(time=today, stage='0021', address_id=address_id, money=money, user_id=userid,
-                                 cart_id=cart_ids, phone=obj.phone, aname=obj.uname, address=obj.address)
+            with transaction.atomic():
+                for i in infos:
+                    good = Goods.objects.get(goods_id=i.goods_id)
+                    fl = Flower.objects.get(flower_id=good.flower_id)
+                    good.total_num = Minus(good.total_num, i.num)
+                    good.salenum = Add(good.salenum, i.num)
+                    fl.num = Minus(fl.num, i.num)
+                    fl.save()
+                    good.save()
+                Order.objects.create(time=today, stage='0021', address_id=address_id, money=money, user_id=userid,
+                                     cart_id=cart_ids, phone=obj.phone, aname=obj.uname, address=obj.address)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
         return BaseResponse(msg="操作成功", status=200)
@@ -91,7 +110,7 @@ class OrderShowView(APIView):
             res = queryOneOrder(orderid=orderid)
             if res is None or res == []:
                 print("该订单不存在")
-                return BaseResponse(msg="没得这个数据哦！",  status=200)
+                return BaseResponse(msg="没得这个数据哦！", status=200)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
 
@@ -245,3 +264,15 @@ def queryNames(goods_id=None):
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
     return result
+
+
+def Minus(a, b):
+    a = int(a)
+    b = int(b)
+    return str(a - b)
+
+
+def Add(a, b):
+    a = int(a)
+    b = int(b)
+    return str(a + b)
