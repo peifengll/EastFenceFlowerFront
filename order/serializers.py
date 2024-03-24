@@ -8,7 +8,8 @@ from models.models import User, Order
 class OrderInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['order_id', 'time', 'stage', 'address_id', 'money', 'user_id',
-                  'remark', 'cart_id']
+        fields = '__all__'
+        # fields = ['order_id', 'time', 'stage', 'address_id', 'money', 'user_id',
+        #           'remark', 'cart_id']
     # fields = '__all__'
     # exclude = ['keyword']

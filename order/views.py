@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from rest_framework.views import APIView
 
+import models.models
 from libs.utils.base_response import BaseResponse
 from models.models import Order, Address, Flower, Cart, Goods
 from order.serializers import OrderInfoSerializer
@@ -49,6 +50,54 @@ class OrderAddView(APIView):
                     good.save()
                 Order.objects.create(time=today, stage='0021', address_id=address_id, money=money, user_id=userid,
                                      cart_id=cart_ids, phone=obj.phone, aname=obj.uname, address=obj.address)
+        except Exception as e:
+            return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
+        return BaseResponse(msg="操作成功", status=200)
+
+
+#  没得cart的那个
+class OrderAddViewWithNoCart(APIView):
+    """
+    设计上就只要
+     num
+     goodsid
+     money
+     addressid
+    """
+
+    def post(self, request):
+        userid = request.data.get("user_id")
+        if userid is None or userid == "":
+            return BaseResponse(msg="用户凭证缺失", status=401)
+        num = request.data.get("num")
+        goodid = request.data.get("goodsid")
+        addressid = request.data.get("address_id")
+
+        if not addressid or not goodid or not num:
+            return BaseResponse(msg="参数缺失", status=400)
+
+        noway = True
+        msg = ""
+        good = Goods.objects.get(goods_id=goodid)
+        if int(good.total_num) < int(num):
+            msg += " 你购买的 %s数量超过库存,该产品库存只有%s \n" % (good.gname, good.total_num)
+            noway = False
+        if not noway:
+            return BaseResponse(msg=msg, status=317)
+        try:
+            money = int(num) * int(good.charge)
+            obj = Address.objects.get(add_id=addressid)
+            today = timezone.now()
+            with transaction.atomic():
+                good = Goods.objects.get(goods_id=goodid)
+                fl = Flower.objects.get(flower_id=good.flower_id)
+                good.total_num = Minus(good.total_num, num)
+                good.salenum = Add(good.salenum, num)
+                fl.num = Minus(fl.num, num)
+                fl.save()
+                good.save()
+                Order.objects.create(time=today, stage='0021', address_id=addressid, money=money, user_id=userid,
+                                     phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=goodid, num=num)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
         return BaseResponse(msg="操作成功", status=200)
@@ -107,14 +156,15 @@ class OrderShowView(APIView):
             return BaseResponse(msg="缺失订单信息", status=313)
         res = None
         try:
-            res = queryOneOrder(orderid=orderid)
-            if res is None or res == []:
-                print("该订单不存在")
-                return BaseResponse(msg="没得这个数据哦！", status=200)
+            res = queryOneOrder(orderid)
+            # info = models.models.Order.objects.get(order_id=orderid)
+            # res = OrderInfoSerializer(info)
+        except  models.models.Order.DoesNotExist:
+            return BaseResponse(msg="没得这个数据哦！", status=200)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
 
-        return BaseResponse(msg="操作成功", data=res[0], status=200)
+        return BaseResponse(msg="操作成功", data=res, status=200)
 
 
 def custom_query(userid=None):
@@ -148,19 +198,7 @@ def queryOneOrder(orderid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
             SELECT
-                o.order_id,
-                o.stage,
-                o.time,
-                o.money,
-                o.aname,
-                o.phone,
-                o.address,
-                o.remark,
-                o.beihuo_id,
-                o.beihuo,
-                o.peisong_id,
-                o.peisong,
-                o.cart_id AS cart_infos 
+                o.*
             FROM
                 `order` o 
             WHERE
@@ -173,19 +211,25 @@ def queryOneOrder(orderid=None):
         if len(result) == 0 or result is None:
             return None
         for i in result:
-            cart_ids = eval(i['cart_infos'])
-            # 拿到cart_ids
-            cart_infos = []
-            for j in cart_ids:
-                cart_infos.append(queryCart(j))
-            i['cart_infos'] = cart_infos
-            print(cart_infos[0][0]['goods_id'])
-            print("*" * 5)
-            names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
-            print(names)
+            print("----")
+            names = queryNames(goods_id=i['goods_id'])
             i['ename'] = names[0]['ename']
+            i['size'] = names[0]['size']
             i['gname'] = names[0]['gname']
             i['flower_id'] = int(names[0]['flower_id'])
+    # cart_ids = eval(i['cart_infos'])
+    # # 拿到cart_ids
+    # cart_infos = []
+    # for j in cart_ids:
+    #     cart_infos.append(queryCart(j))
+    # i['cart_infos'] = cart_infos
+    # print(cart_infos[0][0]['goods_id'])
+    # print("*" * 5)
+    # names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
+    # print(names)
+    # i['ename'] = names[0]['ename']
+    # i['gname'] = names[0]['gname']
+    # i['flower_id'] = int(names[0]['flower_id'])
     return result
 
 
@@ -193,8 +237,7 @@ def custom_query2(userid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
             SELECT
-                o.*,
-                o.cart_id AS cart_infos 
+                o.*
             FROM
                 `order` o 
             WHERE
@@ -202,21 +245,12 @@ def custom_query2(userid=None):
             ORDER BY
                 o.order_id DESC
         """, [userid])
-
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
         for i in result:
-            cart_ids = eval(i['cart_infos'])
-            # 拿到cart_ids
-            cart_infos = []
-            for j in cart_ids:
-                cart_infos.append(queryCart(j))
-            i['cart_infos'] = cart_infos
-            print(cart_infos[0][0]['goods_id'])
-            print("*" * 5)
-            names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
-            print(names)
+            names = queryNames(goods_id=i['goods_id'])
             i['ename'] = names[0]['ename']
+            i['size'] = names[0]['size']
             i['gname'] = names[0]['gname']
             i['flower_id'] = int(names[0]['flower_id'])
     return result
@@ -243,10 +277,10 @@ def queryCart(cart_id=None):
 
 
 def queryNames(goods_id=None):
-    print(goods_id, "sasas")
+    # print(goods_id, "sasas")
     with connection.cursor() as cursor:
         cursor.execute("""   
-            select goods.ename, goods.gname,goods.flower_id
+            select goods.ename, goods.gname,goods.flower_id,goods.size
             from goods
             where goods_id = %s               
            """, [goods_id])
