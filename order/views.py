@@ -60,7 +60,7 @@ class OrderAddViewWithNoCart(APIView):
     """
     设计上就只要
      num
-     goodsid
+     goodsid []
      money
      addressid
     """
@@ -72,7 +72,11 @@ class OrderAddViewWithNoCart(APIView):
         num = request.data.get("num")
         goodid = request.data.get("goodsid")
         addressid = request.data.get("address_id")
+        print(goodid)
+        goodid=json.loads(goodid)
+        print(goodid[0])
 
+        return BaseResponse(msg="测试", status=200)
         if not addressid or not goodid or not num:
             return BaseResponse(msg="参数缺失", status=400)
 
