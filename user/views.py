@@ -68,8 +68,7 @@ class UploadView(APIView):
         # 获取一个文件管理器对象
         userid = request.data.get('user_id')
         if userid is None or userid == "":
-            userid = 2
-            # return BaseResponse(msg="用户凭证未获取到", status=401)
+            return BaseResponse(msg="用户凭证未获取到", status=401)
         file = None
         if 'pic' in request.FILES:
             file = request.FILES['pic']
@@ -119,7 +118,7 @@ class UploadView(APIView):
                 print("执行了吗： ", new_name)
             # 返回的httpresponse
         except Exception as e:
-            print(e)
+            print(e.__str__())
             return BaseResponse(msg="服务器内部错误", status=500)
         return BaseResponse(msg="返回成功", status=200, data={})
 
