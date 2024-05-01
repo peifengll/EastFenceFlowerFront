@@ -98,7 +98,7 @@ class OrderAddViewWithNoCart(APIView):
                 obj = Address.objects.get(add_id=addressid)
                 today = timezone.now()
                 with transaction.atomic():
-                    good = Goods.objects.get(goods_id=goodid)
+                    good = Goods.objects.get(goods_id=i)
                     fl = Flower.objects.get(flower_id=good.flower_id)
                     good.total_num = Minus(good.total_num, num)
                     good.salenum = Add(good.salenum, num)
@@ -106,7 +106,7 @@ class OrderAddViewWithNoCart(APIView):
                     fl.save()
                     good.save()
                     Order.objects.create(time=today, stage='0021', address_id=addressid, money=money, user_id=userid,
-                                         phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=goodid, num=num)
+                                         phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=i, num=num)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
         return BaseResponse(msg="操作成功", status=200)
