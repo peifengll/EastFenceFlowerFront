@@ -74,7 +74,7 @@ class OrderAddViewWithNoCart(APIView):
         addressid = request.data.get("address_id")
         print(goodid)
         int_list = [int(x) for x in goodid]
-        goodid=int_list
+        goodid = int_list
         print(goodid)
         print(goodid[0])
         print(goodid[1])
@@ -92,9 +92,11 @@ class OrderAddViewWithNoCart(APIView):
             if not noway:
                 return BaseResponse(msg=msg, status=317)
         try:
+            totalmoney = 0
             for i in goodid:
                 good = Goods.objects.get(goods_id=i)
                 money = int(num) * int(good.charge)
+                totalmoney += money
                 obj = Address.objects.get(add_id=addressid)
                 today = timezone.now()
                 with transaction.atomic():
@@ -105,8 +107,8 @@ class OrderAddViewWithNoCart(APIView):
                     fl.num = Minus(fl.num, num)
                     fl.save()
                     good.save()
-                    Order.objects.create(time=today, stage='0021', address_id=addressid, money=money, user_id=userid,
-                                         phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=i, num=num)
+            Order.objects.create(time=today, stage='0021', address_id=addressid, money=totalmoney, user_id=userid,
+                                 phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=str(goodid), num=num)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
         return BaseResponse(msg="操作成功", status=200)
@@ -256,6 +258,7 @@ def custom_query2(userid=None):
         """, [userid])
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        print(result)
         for i in result:
             names = queryNames(goods_id=i['goods_id'])
             i['ename'] = names[0]['ename']
