@@ -73,35 +73,40 @@ class OrderAddViewWithNoCart(APIView):
         goodid = request.data.get("goodsid")
         addressid = request.data.get("address_id")
         print(goodid)
-        goodid=json.loads(goodid)
+        int_list = [int(x) for x in goodid]
+        goodid=int_list
+        print(goodid)
         print(goodid[0])
-
-        return BaseResponse(msg="测试", status=200)
+        print(goodid[1])
+        print(goodid[2])
         if not addressid or not goodid or not num:
             return BaseResponse(msg="参数缺失", status=400)
 
         noway = True
         msg = ""
-        good = Goods.objects.get(goods_id=goodid)
-        if int(good.total_num) < int(num):
-            msg += " 你购买的 %s数量超过库存,该产品库存只有%s \n" % (good.gname, good.total_num)
-            noway = False
-        if not noway:
-            return BaseResponse(msg=msg, status=317)
+        for i in goodid:
+            good = Goods.objects.get(goods_id=i)
+            if int(good.total_num) < int(num):
+                msg += " 你购买的 %s数量超过库存,该产品库存只有%s \n" % (good.gname, good.total_num)
+                noway = False
+            if not noway:
+                return BaseResponse(msg=msg, status=317)
         try:
-            money = int(num) * int(good.charge)
-            obj = Address.objects.get(add_id=addressid)
-            today = timezone.now()
-            with transaction.atomic():
-                good = Goods.objects.get(goods_id=goodid)
-                fl = Flower.objects.get(flower_id=good.flower_id)
-                good.total_num = Minus(good.total_num, num)
-                good.salenum = Add(good.salenum, num)
-                fl.num = Minus(fl.num, num)
-                fl.save()
-                good.save()
-                Order.objects.create(time=today, stage='0021', address_id=addressid, money=money, user_id=userid,
-                                     phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=goodid, num=num)
+            for i in goodid:
+                good = Goods.objects.get(goods_id=i)
+                money = int(num) * int(good.charge)
+                obj = Address.objects.get(add_id=addressid)
+                today = timezone.now()
+                with transaction.atomic():
+                    good = Goods.objects.get(goods_id=goodid)
+                    fl = Flower.objects.get(flower_id=good.flower_id)
+                    good.total_num = Minus(good.total_num, num)
+                    good.salenum = Add(good.salenum, num)
+                    fl.num = Minus(fl.num, num)
+                    fl.save()
+                    good.save()
+                    Order.objects.create(time=today, stage='0021', address_id=addressid, money=money, user_id=userid,
+                                         phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=goodid, num=num)
         except Exception as e:
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
         return BaseResponse(msg="操作成功", status=200)
