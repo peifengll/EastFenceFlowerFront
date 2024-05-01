@@ -62,18 +62,21 @@ class RegisterView(APIView):
 
 
 class UploadView(APIView):
+
     def post(self, request):
         print("403????")
         # 获取一个文件管理器对象
         userid = request.data.get('user_id')
         if userid is None or userid == "":
-            return BaseResponse(msg="用户凭证未获取到", status=401)
+            userid = 2
+            # return BaseResponse(msg="用户凭证未获取到", status=401)
         file = None
         if 'pic' in request.FILES:
             file = request.FILES['pic']
         # if file is None:
         #     return BaseResponse(msg="图片未获取到", status=308)
         phone = request.data.get('phone')
+        intor = request.data.get('intor')
         nickname = request.data.get('nickname')
         age = request.data.get('age')
         location = request.data.get('location')
@@ -83,6 +86,9 @@ class UploadView(APIView):
         print(phone, nickname, age, location, email, gender, bio)
         try:
             obj = models.models.User.objects.filter(user_id=userid)
+            if intor:
+                print("intor:",intor)
+                obj.update(intor=intor)
             if phone:
                 obj.update(phone=phone)
             if nickname:
@@ -107,11 +113,13 @@ class UploadView(APIView):
                 with open(where, 'wb') as f:
                     for i in content:
                         f.write(i)
-
+                new_name = "/media/users/" + getNewName('avatar')
                 # 上传文件名称到数据库
-                obj.filter(user_id=1).update(photo=new_name)
+                obj.update(photo=new_name)
+                print("执行了吗： ", new_name)
             # 返回的httpresponse
         except Exception as e:
+            print(e)
             return BaseResponse(msg="服务器内部错误", status=500)
         return BaseResponse(msg="返回成功", status=200, data={})
 
