@@ -260,10 +260,33 @@ def custom_query2(userid=None):
         columns = [col[0] for col in cursor.description]
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
         print(result)
+
         for i in result:
-            names = queryNames(goods_id=i['goods_id'])
+            list = json.loads(i['goods_id'])
+            print(i['goods_id'])
+            print("list : ", list)
+            cartinfo = [None for i in list]
+            print(cartinfo)
+            print(cartinfo[0])
+            po = models.models.User.objects.get(user_id=i['user_id'])
+            uname = po.uname
+            for item in range(0, len(list)):
+                map = queryNames(list[item])
+                map[0]['num'] = i['num']
+                map[0]['uname'] = uname
+                map[0]['goods_id'] = list[item]
+                del map[0]['ename']
+                del map[0]['gname']
+                del map[0]['flower_id']
+
+
+                cartinfo[item] = map
+                print("k,v:", item, list[item])
+                print(map)
+            i['cart_infos'] = cartinfo
+            # size
+            names = queryNames(goods_id=list[0])
             i['ename'] = names[0]['ename']
-            i['size'] = names[0]['size']
             i['gname'] = names[0]['gname']
             i['flower_id'] = int(names[0]['flower_id'])
     return result
@@ -293,7 +316,7 @@ def queryNames(goods_id=None):
     # print(goods_id, "sasas")
     with connection.cursor() as cursor:
         cursor.execute("""   
-            select goods.ename, goods.gname,goods.flower_id,goods.size
+            select goods.ename, goods.gname,goods.flower_id,goods.size,goods.size,goods.charge as price
             from goods
             where goods_id = %s               
            """, [goods_id])
