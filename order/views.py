@@ -76,9 +76,6 @@ class OrderAddViewWithNoCart(APIView):
         int_list = [int(x) for x in goodid]
         goodid = int_list
         print(goodid)
-        print(goodid[0])
-        print(goodid[1])
-        print(goodid[2])
         if not addressid or not goodid or not num:
             return BaseResponse(msg="参数缺失", status=400)
 
