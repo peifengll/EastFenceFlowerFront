@@ -217,33 +217,37 @@ def queryOneOrder(orderid=None):
                 o.order_id = %s 
         """, [orderid])
         columns = [col[0] for col in cursor.description]
-        if len(columns) == 0:
-            return None
         result = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        if len(result) == 0 or result is None:
-            return None
+        print(result)
+
         for i in result:
-            print("----")
-            names = queryNames(goods_id=i['goods_id'])
+            list = json.loads(i['goods_id'])
+            print(i['goods_id'])
+            print("list : ", list)
+            cartinfo = [None for i in list]
+            print(cartinfo)
+            print(cartinfo[0])
+            po = models.models.User.objects.get(user_id=i['user_id'])
+            uname = po.uname
+            for item in range(0, len(list)):
+                map = queryNames(list[item])
+                map[0]['num'] = i['num']
+                map[0]['uname'] = uname
+                map[0]['goods_id'] = list[item]
+                del map[0]['ename']
+                del map[0]['gname']
+                del map[0]['flower_id']
+                cartinfo[item] = map
+                print("k,v:", item, list[item])
+                print(map)
+            i['cart_infos'] = cartinfo
+            # size
+            names = queryNames(goods_id=list[0])
             i['ename'] = names[0]['ename']
-            i['size'] = names[0]['size']
             i['gname'] = names[0]['gname']
             i['flower_id'] = int(names[0]['flower_id'])
-    # cart_ids = eval(i['cart_infos'])
-    # # 拿到cart_ids
-    # cart_infos = []
-    # for j in cart_ids:
-    #     cart_infos.append(queryCart(j))
-    # i['cart_infos'] = cart_infos
-    # print(cart_infos[0][0]['goods_id'])
-    # print("*" * 5)
-    # names = queryNames(goods_id=cart_infos[0][0]['goods_id'])
-    # print(names)
-    # i['ename'] = names[0]['ename']
-    # i['gname'] = names[0]['gname']
-    # i['flower_id'] = int(names[0]['flower_id'])
+    result=result[0]
     return result
-
 
 def custom_query2(userid=None):
     with connection.cursor() as cursor:
@@ -278,8 +282,6 @@ def custom_query2(userid=None):
                 del map[0]['ename']
                 del map[0]['gname']
                 del map[0]['flower_id']
-
-
                 cartinfo[item] = map
                 print("k,v:", item, list[item])
                 print(map)
