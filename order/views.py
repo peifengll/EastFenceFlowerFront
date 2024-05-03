@@ -315,7 +315,7 @@ def queryNames(goods_id=None):
     # print(goods_id, "sasas")
     with connection.cursor() as cursor:
         cursor.execute("""   
-            select goods.ename, goods.gname,goods.flower_id,goods.size,goods.size,goods.charge as price
+            select goods.ename, goods.gname,goods.flower_id,goods.size,goods.size,goods.charge as price,goods.image
             from goods
             where goods_id = %s               
            """, [goods_id])
