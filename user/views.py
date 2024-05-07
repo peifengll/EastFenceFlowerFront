@@ -86,7 +86,7 @@ class UploadView(APIView):
         try:
             obj = models.models.User.objects.filter(user_id=userid)
             if intor:
-                print("intor:",intor)
+                print("intor:", intor)
                 obj.update(intor=intor)
             if phone:
                 obj.update(phone=phone)
@@ -112,7 +112,8 @@ class UploadView(APIView):
                 with open(where, 'wb') as f:
                     for i in content:
                         f.write(i)
-                new_name = "/media/users/" + getNewName('avatar')
+                #  就是这里有问题
+                new_name = "/media/users/" + new_name
                 # 上传文件名称到数据库
                 obj.update(photo=new_name)
                 print("执行了吗： ", new_name)
