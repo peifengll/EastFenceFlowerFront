@@ -55,6 +55,10 @@ class OrderAddView(APIView):
         return BaseResponse(msg="操作成功", status=200)
 
 
+#  当前是第几个员工
+item = 0
+
+
 #  没得cart的那个
 class OrderAddViewWithNoCart(APIView):
     """
@@ -66,15 +70,21 @@ class OrderAddViewWithNoCart(APIView):
     """
 
     def post(self, request):
+        global item
         userid = request.data.get("user_id")
         if userid is None or userid == "":
             return BaseResponse(msg="用户凭证缺失", status=401)
         num = request.data.get("num")
         goodid = request.data.get("goodsid")
         addressid = request.data.get("address_id")
+        peisongs = queryPeiSongers()
+        print("********************")
+        print(peisongs)
+        print("********************")
         print(goodid)
         int_list = [int(x) for x in goodid]
         goodid = int_list
+        # goodid = json.loads(goodid)
         print(goodid)
         if not addressid or not goodid or not num:
             return BaseResponse(msg="参数缺失", status=400)
@@ -104,8 +114,14 @@ class OrderAddViewWithNoCart(APIView):
                     fl.num = Minus(fl.num, num)
                     fl.save()
                     good.save()
+            if peisongs != None:
+                while peisongs[item]['stage'] == '0063':
+                    item = (item + 1) % len(peisongs)
+
             Order.objects.create(time=today, stage='0021', address_id=addressid, money=totalmoney, user_id=userid,
-                                 phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=str(goodid), num=num)
+                                 phone=obj.phone, aname=obj.uname, address=obj.address, goods_id=str(goodid), num=num,
+                                 peisong=peisongs[item]['mname'], peisong_id=peisongs[item]['manager_id'])
+            item = (item + 1) % len(peisongs)
         except Exception as e:
             print(e.__str__())
             return BaseResponse(msg="服务器内部错误" + e.__str__(), status=500)
@@ -203,6 +219,19 @@ def custom_query(userid=None):
     return result
 
 
+#  获取所有的配送员
+def queryPeiSongers():
+    with connection.cursor() as cursor:
+        cursor.execute("""   
+            select manager_id, stage, mname
+            from manager
+            where `restrict` = '0053'
+        """)
+        columns = [col[0] for col in cursor.description]
+        result = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return result
+
+
 def queryOneOrder(orderid=None):
     with connection.cursor() as cursor:
         cursor.execute("""   
@@ -243,8 +272,9 @@ def queryOneOrder(orderid=None):
             i['ename'] = names[0]['ename']
             i['gname'] = names[0]['gname']
             i['flower_id'] = int(names[0]['flower_id'])
-    result=result[0]
+    result = result[0]
     return result
+
 
 def custom_query2(userid=None):
     with connection.cursor() as cursor:
